@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4-Digit Number Generator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0f172a; color: #f1f5f9; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .card { background: #1e293b; border-radius: 20px; padding: 48px 56px; text-align: center; width: 420px; box-shadow: 0 25px 60px rgba(0,0,0,0.4); }
+    h1 { font-size: 18px; font-weight: 600; color: #94a3b8; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 36px; }
+    .number-display { font-size: 88px; font-weight: 800; letter-spacing: 0.08em; color: #38bdf8; line-height: 1; min-height: 100px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-variant-numeric: tabular-nums; transition: color 0.2s; }
+    .number-display.flash { color: #7dd3fc; }
+    .number-display.exhausted { color: #f87171; font-size: 32px; }
+    .subtitle { font-size: 13px; color: #475569; margin-bottom: 36px; min-height: 20px; }
+    .btn { background: #0ea5e9; color: white; border: none; border-radius: 12px; padding: 16px 40px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.15s, transform 0.1s; width: 100%; margin-bottom: 12px; }
+    .btn:hover:not(:disabled) { background: #38bdf8; }
+    .btn:active:not(:disabled) { transform: scale(0.98); }
+    .btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+    .btn-reset { background: transparent; color: #64748b; border: 1px solid #334155; border-radius: 12px; padding: 12px 40px; font-size: 14px; font-weight: 500; cursor: pointer; transition: border-color 0.15s, color 0.15s; width: 100%; }
+    .btn-reset:hover { border-color: #64748b; color: #94a3b8; }
+    .stats { margin-top: 28px; padding-top: 24px; border-top: 1px solid #334155; display: flex; justify-content: space-between; }
+    .stat { text-align: center; }
+    .stat-value { font-size: 24px; font-weight: 700; color: #f1f5f9; }
+    .stat-label { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+    .history { margin-top: 24px; max-height: 120px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+    .history-tag { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 3px 8px; font-size: 12px; color: #64748b; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>4-Digit Number Generator</h1>
+    <div class="number-display" id="display">—</div>
+    <div class="subtitle" id="subtitle">Press Generate to get your first number</div>
+    <button class="btn" id="generateBtn" onclick="generate()">Generate</button>
+    <button class="btn-reset" onclick="reset()">Reset</button>
+    <div class="stats">
+      <div class="stat"><div class="stat-value" id="countGenerated">0</div><div class="stat-label">Generated</div></div>
+      <div class="stat"><div class="stat-value" id="countRemaining">9000</div><div class="stat-label">Remaining</div></div>
+      <div class="stat"><div class="stat-value" id="countPercent">0%</div><div class="stat-label">Used</div></div>
+    </div>
+    <div class="history" id="history"></div>
+  </div>
+  <script>
+    const TOTAL = 9000;
+    let used = new Set();
+    function generate() {
+      if (used.size === TOTAL) {
+        document.getElementById('display').textContent = 'All used!';
+        document.getElementById('display').classList.add('exhausted');
+        document.getElementById('subtitle').textContent = 'All 9,000 numbers have been generated. Reset to start over.';
+        document.getElementById('generateBtn').disabled = true;
+        return;
+      }
+      let num;
+      do { num = Math.floor(Math.random() * 9000) + 1000; } while (used.has(num));
+      used.add(num);
+      updateDisplay(num);
+      updateStats();
+      addToHistory(num);
+    }
+    function updateDisplay(num) {
+      const el = document.getElementById('display');
+      el.classList.remove('exhausted');
+      el.textContent = num;
+      el.classList.add('flash');
+      setTimeout(() => el.classList.remove('flash'), 200);
+      const nth = used.size, v = nth % 100;
+      const s = ['th','st','nd','rd'];
+      document.getElementById('subtitle').textContent = nth + (s[(v-20)%10] || s[v] || s[0]) + ' unique number generated';
+    }
+    function updateStats() {
+      const g = used.size, r = TOTAL - g, p = Math.round(g/TOTAL*100);
+      document.getElementById('countGenerated').textContent = g.toLocaleString();
+      document.getElementById('countRemaining').textContent = r.toLocaleString();
+      document.getElementById('countPercent').textContent = p + '%';
+    }
+    function addToHistory(num) {
+      const h = document.getElementById('history'), t = document.createElement('div');
+      t.className = 'history-tag'; t.textContent = num;
+      h.insertBefore(t, h.firstChild);
+    }
+    function reset() {
+      used = new Set();
+      document.getElementById('display').textContent = '—';
+      document.getElementById('display').classList.remove('exhausted');
+      document.getElementById('subtitle').textContent = 'Press Generate to get your first number';
+      document.getElementById('generateBtn').disabled = false;
+      document.getElementById('history').innerHTML = '';
+      document.getElementById('countGenerated').textContent = '0';
+      document.getElementById('countRemaining').textContent = '9,000';
+      document.getElementById('countPercent').textContent = '0%';
+    }
+  </script>
+</body>
+</html>
